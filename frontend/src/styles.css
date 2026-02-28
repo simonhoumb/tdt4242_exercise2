@@ -1,0 +1,88 @@
+:root {
+	font-family: Inter, system-ui, sans-serif;
+	color: #0f172a;
+	background: #f8fafc;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+.page {
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 24px 16px 40px;
+}
+
+.card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+@media (max-width: 768px) {
+	.row {
+		grid-template-columns: 1fr;
+	}
+}
+
+label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+input,
+select,
+textarea,
+button {
+	width: 100%;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	padding: 10px;
+	font: inherit;
+}
+
+textarea {
+	min-height: 120px;
+	resize: vertical;
+}
+
+button {
+	cursor: pointer;
+	font-weight: 700;
+	background: #0f172a;
+	color: #ffffff;
+}
+
+button:disabled {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
+.error {
+	color: #b91c1c;
+	margin-top: 8px;
+}
+
+.info {
+	color: #1d4ed8;
+}
+
+.violation {
+	border-left: 4px solid #f59e0b;
+	padding-left: 12px;
+	margin-top: 12px;
+}

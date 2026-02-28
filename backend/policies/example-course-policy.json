@@ -1,0 +1,47 @@
+[
+	{
+		"ruleId": "NO_FULL_GENERATION",
+		"name": "Full AI-generated answers prohibited",
+		"description": "This course allows AI for editing support but not full answer generation.",
+		"courseId": "CS101",
+		"assignmentId": "A1",
+		"enabled": true,
+		"severity": "medium",
+		"ruleType": "assistance_type_not_allowed",
+		"conditions": {
+			"blockedTypes": ["generation"]
+		},
+		"educationalMessage": "AI should support your own reasoning process rather than replace it.",
+		"suggestedAction": "Rewrite core reasoning in your own words and use AI only for refinement."
+	},
+	{
+		"ruleId": "MAX_AI_40",
+		"name": "AI contribution must stay below 40%",
+		"description": "Assignments require original student authorship for the majority of content.",
+		"courseId": "CS101",
+		"assignmentId": "A1",
+		"enabled": true,
+		"severity": "high",
+		"ruleType": "max_ai_contribution",
+		"conditions": {
+			"maxPercent": 40
+		},
+		"educationalMessage": "Aim to treat AI as support rather than primary author.",
+		"suggestedAction": "Reduce AI-generated content and explain your independent analysis."
+	},
+	{
+		"ruleId": "EXPLAIN_USAGE",
+		"name": "Contribution description is required",
+		"description": "Students must explain how AI was used in the assignment.",
+		"courseId": "CS101",
+		"assignmentId": "A1",
+		"enabled": true,
+		"severity": "low",
+		"ruleType": "required_field_non_empty",
+		"conditions": {
+			"field": "contributionDescription"
+		},
+		"educationalMessage": "Transparent reporting helps build good academic habits.",
+		"suggestedAction": "Add a concise description of AI support and your own contribution."
+	}
+]
