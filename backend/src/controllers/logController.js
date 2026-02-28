@@ -11,12 +11,32 @@ import {
 } from "../services/complianceService.js";
 
 function resolveUserId(req) {
-	return req.headers["x-user-id"] || req.body.userId || req.query.userId;
+	const body = req.body || {};
+	const nestedPayload =
+		body && typeof body.payload === "object" && body.payload !== null
+			? body.payload
+			: null;
+
+	return (
+		req.headers["x-user-id"] ||
+		body.userId ||
+		nestedPayload?.userId ||
+		req.query.userId
+	);
+}
+
+function resolveUsagePayload(body) {
+	if (body && typeof body.payload === "object" && body.payload !== null) {
+		return body.payload;
+	}
+
+	return body || {};
 }
 
 export async function createLog(req, res, next) {
 	try {
 		const userId = resolveUserId(req);
+		const usagePayload = resolveUsagePayload(req.body);
 		if (!userId) {
 			throw new AppError(
 				"Unauthenticated request. Provide x-user-id.",
@@ -24,13 +44,13 @@ export async function createLog(req, res, next) {
 			);
 		}
 
-		const validation = validateUsageLogPayload(req.body);
+		const validation = validateUsageLogPayload(usagePayload);
 		if (!validation.valid) {
 			throw new AppError(validation.message, 400);
 		}
 
 		const payload = {
-			...req.body,
+			...usagePayload,
 			userId,
 			source: "manual",
 		};
@@ -93,12 +113,13 @@ export async function deleteLogsByUser(req, res, next) {
 
 export async function checkComplianceForDraft(req, res, next) {
 	try {
-		const validation = validateUsageLogPayload(req.body);
+		const usagePayload = resolveUsagePayload(req.body);
+		const validation = validateUsageLogPayload(usagePayload);
 		if (!validation.valid) {
 			throw new AppError(validation.message, 400);
 		}
 
-		const compliance = await evaluateUsageLogCompliance(req.body);
+		const compliance = await evaluateUsageLogCompliance(usagePayload);
 		res.json(compliance);
 	} catch (error) {
 		next(error);

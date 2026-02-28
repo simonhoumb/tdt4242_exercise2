@@ -29,12 +29,16 @@ async function request(path, options = {}, maxAttempts = 3) {
 	while (attemptNumber < maxAttempts) {
 		try {
 			attemptNumber += 1;
-			const response = await fetch(`${BASE_URL}${path}`, {
+			const requestOptions = {
+				...options,
 				headers: {
 					"Content-Type": "application/json",
 					...(options.headers || {}),
 				},
-				...options,
+			};
+
+			const response = await fetch(`${BASE_URL}${path}`, {
+				...requestOptions,
 			});
 
 			const payload = await response.json().catch(() => ({}));
@@ -69,13 +73,27 @@ async function request(path, options = {}, maxAttempts = 3) {
 	throw transformedError;
 }
 
+function normalizeUsagePayload(input) {
+	if (!input || typeof input !== "object") {
+		return {};
+	}
+
+	if (input.payload && typeof input.payload === "object") {
+		return input.payload;
+	}
+
+	return input;
+}
+
 export async function createUsageLog({ userId, payload }) {
+	const normalizedPayload = normalizeUsagePayload(payload);
+
 	return request("/logs", {
 		method: "POST",
 		headers: {
 			"x-user-id": userId,
 		},
-		body: JSON.stringify(payload),
+		body: JSON.stringify(normalizedPayload),
 	});
 }
 
@@ -95,9 +113,11 @@ export async function listUsageLogs({ userId, courseId, assignmentId }) {
 }
 
 export async function checkComplianceDraft(payload) {
+	const normalizedPayload = normalizeUsagePayload(payload);
+
 	return request("/logs/compliance/check", {
 		method: "POST",
-		body: JSON.stringify(payload),
+		body: JSON.stringify(normalizedPayload),
 	});
 }
 
