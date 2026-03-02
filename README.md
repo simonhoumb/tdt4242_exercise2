@@ -6,7 +6,6 @@
 - `backend/src/models/PolicyRule.js`: FR5, NFR5 configurable JSON-based course and assignment rules.
 - `backend/src/services/loggingService.js`: FR4, NFR4 async log persistence and retry.
 - `backend/src/services/complianceService.js`: FR5, FR6, FR7, NFR3, NFR6 rule evaluation and educational feedback.
-- `backend/src/middleware/autoLoggingMiddleware.js`: FR4, NFR4 non-blocking post-response logging.
 - `backend/src/routes/logRoutes.js`: POST/GET logs, draft and batch compliance, GDPR delete.
 - `backend/src/routes/policyRoutes.js`: course policy create/list endpoints.
 - `backend/src/controllers/*`: request validation, service delegation, error handling.
