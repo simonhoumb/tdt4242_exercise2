@@ -1,4 +1,4 @@
-import { PolicyRule } from "../models/PolicyRule.js";
+import { listPolicyRules } from "../repositories/policyRuleRepository.js";
 
 function safeString(value) {
 	return typeof value === "string" ? value.toLowerCase() : "";
@@ -60,13 +60,14 @@ function toViolation(rule, trigger) {
 		ruleId: rule.ruleId,
 		ruleName: rule.name,
 		explanation: `${rule.description}${trigger ? ` Triggered by: ${trigger}.` : ""}`,
+		educationalMessage: rule.educationalMessage,
 		suggestedAction: rule.suggestedAction,
 		severity: rule.severity || "medium",
 	};
 }
 
-function malformedRuleViolation(rule) {
-	return {
+function malformedRuleViolation(rule, error) {
+	const violation = {
 		ruleId: rule.ruleId || "UNKNOWN_RULE",
 		ruleName: rule.name || "Rule unavailable",
 		explanation:
@@ -75,25 +76,21 @@ function malformedRuleViolation(rule) {
 			"Retry later and inform your instructor if the issue persists.",
 		severity: "low",
 	};
-}
 
-export async function listPolicyRules({ courseId, assignmentId }) {
-	const query = { enabled: true };
-	if (courseId) {
-		query.courseId = courseId;
+	if (process.env.NODE_ENV !== "production" && error?.message) {
+		violation.debug = {
+			errorMessage: error.message,
+		};
 	}
 
-	if (assignmentId) {
-		query.$or = [{ assignmentId }, { assignmentId: null }];
-	}
-
-	return PolicyRule.find(query).sort({ createdAt: -1 }).lean();
+	return violation;
 }
 
 export async function evaluateUsageLogCompliance(usageLogInput) {
 	const rules = await listPolicyRules({
 		courseId: usageLogInput.courseId,
 		assignmentId: usageLogInput.assignmentId,
+		enabledOnly: true,
 	});
 
 	const violations = [];
@@ -110,14 +107,24 @@ export async function evaluateUsageLogCompliance(usageLogInput) {
 				violations.push(toViolation(rule, evaluation.trigger));
 			}
 		} catch (error) {
-			violations.push(malformedRuleViolation(rule));
+			console.error(
+				`[complianceService] Failed to evaluate rule ${rule.ruleId || "UNKNOWN_RULE"}:`,
+				error.message,
+			);
+			violations.push(malformedRuleViolation(rule, error));
 		}
 	}
 
 	const status = violations.length > 0 ? "warning" : "ok";
+	const ruleEducationalMessage = violations.find(
+		(violation) =>
+			typeof violation.educationalMessage === "string" &&
+			violation.educationalMessage.trim().length > 0,
+	)?.educationalMessage;
 	const educationalMessage =
 		violations.length > 0
-			? "Great effort documenting your AI usage. Keep strengthening your independent thinking by applying the feedback below."
+			? ruleEducationalMessage ||
+				"Great effort documenting your AI usage. Keep strengthening your independent thinking by applying the feedback below."
 			: "Great job. Your AI usage appears aligned with current course policy.";
 
 	return {
@@ -143,15 +150,20 @@ export async function evaluateSubmissionCompliance({
 	assignmentId,
 	logs,
 }) {
-	const results = [];
-	for (const logItem of logs) {
-		const compliance = await evaluateUsageLogCompliance({
-			...logItem,
-			courseId,
-			assignmentId,
-		});
-		results.push({ log: logItem, compliance });
-	}
+	const results = await Promise.all(
+		logs.map(async (logItem) => {
+			const compliance = await evaluateUsageLogCompliance({
+				...logItem,
+				courseId,
+				assignmentId,
+			});
+
+			return {
+				log: logItem,
+				compliance,
+			};
+		}),
+	);
 
 	const hasWarnings = results.some(
 		(result) => result.compliance.status === "warning",

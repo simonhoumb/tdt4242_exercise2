@@ -97,35 +97,11 @@ export async function createUsageLog({ userId, payload }) {
 	});
 }
 
-export async function listUsageLogs({ userId, courseId, assignmentId }) {
-	const params = new URLSearchParams();
-	if (userId) {
-		params.set("userId", userId);
-	}
-	if (courseId) {
-		params.set("courseId", courseId);
-	}
-	if (assignmentId) {
-		params.set("assignmentId", assignmentId);
-	}
-
-	return request(`/logs?${params.toString()}`, { method: "GET" });
-}
-
 export async function checkComplianceDraft(payload) {
 	const normalizedPayload = normalizeUsagePayload(payload);
 
 	return request("/logs/compliance/check", {
 		method: "POST",
 		body: JSON.stringify(normalizedPayload),
-	});
-}
-
-export async function deleteUserLogs({ userId }) {
-	return request(`/logs/user/${encodeURIComponent(userId)}`, {
-		method: "DELETE",
-		headers: {
-			"x-user-id": userId,
-		},
 	});
 }

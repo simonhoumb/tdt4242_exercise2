@@ -9,6 +9,16 @@ export const assistanceTypeOptions = [
 	"other",
 ];
 
+export const requiredUsageFields = [
+	"courseId",
+	"assignmentId",
+	"toolName",
+	"assistanceType",
+	"contributionDescription",
+];
+
+export const requiredFormFields = ["userId", ...requiredUsageFields];
+
 export const defaultUsageLogDraft = {
 	userId: "",
 	courseId: "",

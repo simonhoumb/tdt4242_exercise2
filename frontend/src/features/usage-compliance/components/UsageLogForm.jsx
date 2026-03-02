@@ -1,151 +1,117 @@
 import { useMemo, useState } from "react";
-import { assistanceTypeOptions, defaultUsageLogDraft } from "../types";
+import {
+	assistanceTypeOptions,
+	defaultUsageLogDraft,
+	requiredFormFields,
+} from "../types";
 
-export function UsageLogForm({
-	texts,
-	onSubmit,
-	isSubmitting,
-	submitError,
-	onDraftChange,
-}) {
-	const [formState, setFormState] = useState(defaultUsageLogDraft);
+function toUsagePayload(state) {
+	return {
+		courseId: state.courseId,
+		assignmentId: state.assignmentId,
+		toolName: state.toolName,
+		assistanceType: state.assistanceType,
+		contributionDescription: state.contributionDescription,
+		aiContributionPercent: Number(state.aiContributionPercent || 0),
+		promptExcerpt: state.promptExcerpt,
+	};
+}
 
-	const isValid = useMemo(() => {
-		return (
-			formState.userId.trim() &&
-			formState.courseId.trim() &&
-			formState.assignmentId.trim() &&
-			formState.toolName.trim() &&
-			formState.contributionDescription.trim()
-		);
-	}, [formState]);
-
-	function updateField(fieldName, value) {
-		const nextState = {
-			...formState,
-			[fieldName]: value,
-		};
-
-		setFormState(nextState);
-
-		onDraftChange({
-			courseId: nextState.courseId,
-			assignmentId: nextState.assignmentId,
-			toolName: nextState.toolName,
-			assistanceType: nextState.assistanceType,
-			contributionDescription: nextState.contributionDescription,
-			aiContributionPercent: Number(nextState.aiContributionPercent || 0),
-			promptExcerpt: nextState.promptExcerpt,
-		});
-	}
-
-	async function handleSubmit(event) {
-		event.preventDefault();
-
-		const payload = {
-			courseId: formState.courseId,
-			assignmentId: formState.assignmentId,
-			toolName: formState.toolName,
-			assistanceType: formState.assistanceType,
-			contributionDescription: formState.contributionDescription,
-			aiContributionPercent: Number(formState.aiContributionPercent || 0),
-			promptExcerpt: formState.promptExcerpt,
-		};
-
-		await onSubmit({
-			userId: formState.userId,
-			payload,
-		});
-	}
-
+function IdentityFields({ texts, formState, updateField }) {
 	return (
-		<form className="card" onSubmit={handleSubmit}>
-			<h2>{texts.title}</h2>
-			<div className="row">
-				<div>
-					<label htmlFor="userId">{texts.userId}</label>
-					<input
-						id="userId"
-						value={formState.userId}
-						onChange={(event) =>
-							updateField("userId", event.target.value)
-						}
-					/>
-				</div>
-				<div>
-					<label htmlFor="courseId">{texts.courseId}</label>
-					<input
-						id="courseId"
-						value={formState.courseId}
-						onChange={(event) =>
-							updateField("courseId", event.target.value)
-						}
-					/>
-				</div>
+		<div className="row">
+			<div>
+				<label htmlFor="userId">{texts.userId}</label>
+				<input
+					id="userId"
+					value={formState.userId}
+					onChange={(event) =>
+						updateField("userId", event.target.value)
+					}
+				/>
 			</div>
-
-			<div className="row">
-				<div>
-					<label htmlFor="assignmentId">{texts.assignmentId}</label>
-					<input
-						id="assignmentId"
-						value={formState.assignmentId}
-						onChange={(event) =>
-							updateField("assignmentId", event.target.value)
-						}
-					/>
-				</div>
-				<div>
-					<label htmlFor="toolName">{texts.toolName}</label>
-					<input
-						id="toolName"
-						value={formState.toolName}
-						onChange={(event) =>
-							updateField("toolName", event.target.value)
-						}
-					/>
-				</div>
+			<div>
+				<label htmlFor="courseId">{texts.courseId}</label>
+				<input
+					id="courseId"
+					value={formState.courseId}
+					onChange={(event) =>
+						updateField("courseId", event.target.value)
+					}
+				/>
 			</div>
+		</div>
+	);
+}
 
-			<div className="row">
-				<div>
-					<label htmlFor="assistanceType">
-						{texts.assistanceType}
-					</label>
-					<select
-						id="assistanceType"
-						value={formState.assistanceType}
-						onChange={(event) =>
-							updateField("assistanceType", event.target.value)
-						}
-					>
-						{assistanceTypeOptions.map((optionValue) => (
-							<option key={optionValue} value={optionValue}>
-								{optionValue}
-							</option>
-						))}
-					</select>
-				</div>
-				<div>
-					<label htmlFor="aiContributionPercent">
-						{texts.aiContributionPercent}
-					</label>
-					<input
-						id="aiContributionPercent"
-						type="number"
-						min="0"
-						max="100"
-						value={formState.aiContributionPercent}
-						onChange={(event) =>
-							updateField(
-								"aiContributionPercent",
-								event.target.value,
-							)
-						}
-					/>
-				</div>
+function AssignmentFields({ texts, formState, updateField }) {
+	return (
+		<div className="row">
+			<div>
+				<label htmlFor="assignmentId">{texts.assignmentId}</label>
+				<input
+					id="assignmentId"
+					value={formState.assignmentId}
+					onChange={(event) =>
+						updateField("assignmentId", event.target.value)
+					}
+				/>
 			</div>
+			<div>
+				<label htmlFor="toolName">{texts.toolName}</label>
+				<input
+					id="toolName"
+					value={formState.toolName}
+					onChange={(event) =>
+						updateField("toolName", event.target.value)
+					}
+				/>
+			</div>
+		</div>
+	);
+}
 
+function AssistanceFields({ texts, formState, updateField }) {
+	return (
+		<div className="row">
+			<div>
+				<label htmlFor="assistanceType">{texts.assistanceType}</label>
+				<select
+					id="assistanceType"
+					value={formState.assistanceType}
+					onChange={(event) =>
+						updateField("assistanceType", event.target.value)
+					}
+				>
+					{assistanceTypeOptions.map((optionValue) => (
+						<option key={optionValue} value={optionValue}>
+							{optionValue}
+						</option>
+					))}
+				</select>
+			</div>
+			<div>
+				<label htmlFor="aiContributionPercent">
+					{texts.aiContributionPercent}
+				</label>
+				<input
+					id="aiContributionPercent"
+					type="number"
+					min="0"
+					max="100"
+					value={formState.aiContributionPercent}
+					onChange={(event) =>
+						updateField("aiContributionPercent", event.target.value)
+					}
+				/>
+			</div>
+		</div>
+	);
+}
+
+function DescriptionFields({ texts, formState, updateField }) {
+	return (
+		<>
 			<div>
 				<label htmlFor="contributionDescription">
 					{texts.contributionDescription}
@@ -172,6 +138,67 @@ export function UsageLogForm({
 					}
 				/>
 			</div>
+		</>
+	);
+}
+
+export function UsageLogForm({
+	texts,
+	onSubmit,
+	isSubmitting,
+	submitError,
+	onDraftChange,
+}) {
+	const [formState, setFormState] = useState(defaultUsageLogDraft);
+
+	const isValid = useMemo(() => {
+		return requiredFormFields.every(
+			(fieldName) => String(formState[fieldName] || "").trim().length > 0,
+		);
+	}, [formState]);
+
+	function updateField(fieldName, value) {
+		const nextState = {
+			...formState,
+			[fieldName]: value,
+		};
+
+		setFormState(nextState);
+		onDraftChange(toUsagePayload(nextState));
+	}
+
+	async function handleSubmit(event) {
+		event.preventDefault();
+
+		await onSubmit({
+			userId: formState.userId,
+			payload: toUsagePayload(formState),
+		});
+	}
+
+	return (
+		<form className="card" onSubmit={handleSubmit}>
+			<h2>{texts.title}</h2>
+			<IdentityFields
+				texts={texts}
+				formState={formState}
+				updateField={updateField}
+			/>
+			<AssignmentFields
+				texts={texts}
+				formState={formState}
+				updateField={updateField}
+			/>
+			<AssistanceFields
+				texts={texts}
+				formState={formState}
+				updateField={updateField}
+			/>
+			<DescriptionFields
+				texts={texts}
+				formState={formState}
+				updateField={updateField}
+			/>
 
 			{submitError ? (
 				<p className="error">

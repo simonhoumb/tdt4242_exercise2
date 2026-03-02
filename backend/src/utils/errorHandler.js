@@ -6,7 +6,7 @@ export class AppError extends Error {
 	}
 }
 
-export function errorHandler(err, req, res, next) {
+export function errorHandler(err, _req, res, _next) {
 	const statusCode = err.statusCode || 500;
 	const response = {
 		error: {

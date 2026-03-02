@@ -1,6 +1,7 @@
 import { AppError } from "../utils/errorHandler.js";
 import { PolicyRule } from "../models/PolicyRule.js";
 import { validatePolicyPayload } from "../utils/validators.js";
+import { listPolicyRules } from "../repositories/policyRuleRepository.js";
 
 export async function createPolicyRule(req, res, next) {
 	try {
@@ -18,22 +19,10 @@ export async function createPolicyRule(req, res, next) {
 
 export async function listPolicyRulesHandler(req, res, next) {
 	try {
-		const query = {};
-
-		if (req.query.courseId) {
-			query.courseId = req.query.courseId;
-		}
-
-		if (req.query.assignmentId) {
-			query.$or = [
-				{ assignmentId: req.query.assignmentId },
-				{ assignmentId: null },
-			];
-		}
-
-		const rules = await PolicyRule.find(query)
-			.sort({ createdAt: -1 })
-			.lean();
+		const rules = await listPolicyRules({
+			courseId: req.query.courseId,
+			assignmentId: req.query.assignmentId,
+		});
 		res.json({ data: rules });
 	} catch (error) {
 		next(error);

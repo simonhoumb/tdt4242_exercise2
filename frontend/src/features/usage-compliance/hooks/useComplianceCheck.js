@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { checkComplianceDraft } from "../services/usageApi";
+import { requiredUsageFields } from "../types";
 
 export function useComplianceCheck(draftPayload, debounceMs = 600) {
 	const [compliance, setCompliance] = useState(null);
@@ -7,14 +8,7 @@ export function useComplianceCheck(draftPayload, debounceMs = 600) {
 	const [error, setError] = useState("");
 
 	useEffect(() => {
-		const requiredKeys = [
-			"courseId",
-			"assignmentId",
-			"toolName",
-			"assistanceType",
-			"contributionDescription",
-		];
-		const isDraftComplete = requiredKeys.every((key) => {
+		const isDraftComplete = requiredUsageFields.every((key) => {
 			const value = draftPayload?.[key];
 			return typeof value === "string"
 				? value.trim().length > 0

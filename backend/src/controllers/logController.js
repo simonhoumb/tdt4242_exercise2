@@ -33,6 +33,29 @@ function resolveUsagePayload(body) {
 	return body || {};
 }
 
+function validateUsagePayloadOrThrow(usagePayload) {
+	const validation = validateUsageLogPayload(usagePayload);
+	if (!validation.valid) {
+		throw new AppError(validation.message, 400);
+	}
+}
+
+function validateSubmissionLogsOrThrow(logs) {
+	for (const [index, logItem] of logs.entries()) {
+		if (!logItem || typeof logItem !== "object") {
+			throw new AppError(`logs[${index}] must be an object`, 400);
+		}
+
+		const validation = validateUsageLogPayload(logItem);
+		if (!validation.valid) {
+			throw new AppError(
+				`logs[${index}] invalid: ${validation.message}`,
+				400,
+			);
+		}
+	}
+}
+
 export async function createLog(req, res, next) {
 	try {
 		const userId = resolveUserId(req);
@@ -44,10 +67,7 @@ export async function createLog(req, res, next) {
 			);
 		}
 
-		const validation = validateUsageLogPayload(usagePayload);
-		if (!validation.valid) {
-			throw new AppError(validation.message, 400);
-		}
+		validateUsagePayloadOrThrow(usagePayload);
 
 		const payload = {
 			...usagePayload,
@@ -86,7 +106,7 @@ export async function getLogs(req, res, next) {
 
 export async function deleteLogsByUser(req, res, next) {
 	try {
-		const requestingUserId = req.headers["x-user-id"];
+		const requestingUserId = resolveUserId(req);
 		const targetUserId = req.params.userId;
 
 		if (!targetUserId) {
@@ -114,10 +134,7 @@ export async function deleteLogsByUser(req, res, next) {
 export async function checkComplianceForDraft(req, res, next) {
 	try {
 		const usagePayload = resolveUsagePayload(req.body);
-		const validation = validateUsageLogPayload(usagePayload);
-		if (!validation.valid) {
-			throw new AppError(validation.message, 400);
-		}
+		validateUsagePayloadOrThrow(usagePayload);
 
 		const compliance = await evaluateUsageLogCompliance(usagePayload);
 		res.json(compliance);
@@ -136,6 +153,8 @@ export async function checkSubmissionCompliance(req, res, next) {
 				400,
 			);
 		}
+
+		validateSubmissionLogsOrThrow(logs);
 
 		const compliance = await evaluateSubmissionCompliance({
 			courseId,
