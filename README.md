@@ -9,11 +9,13 @@
 - `backend/src/routes/logRoutes.js`: POST/GET logs, draft and batch compliance, GDPR delete.
 - `backend/src/routes/policyRoutes.js`: course policy create/list endpoints.
 - `backend/src/controllers/*`: request validation, service delegation, error handling.
+- `backend/src/tests/*`: backend unit tests for services, controllers, repositories, utils, and config.
 - `frontend/src/features/usage-compliance/components/UsageLogForm.jsx`: FR2, FR3 structured form with loading/error states.
 - `frontend/src/features/usage-compliance/components/ComplianceFeedbackPanel.jsx`: FR6, NFR3 educational-first violations.
 - `frontend/src/features/usage-compliance/components/EthicalGuidanceCard.jsx`: FR7, NFR6 proactive ethical guidance.
 - `frontend/src/features/usage-compliance/services/usageApi.js`: retry logic and error transformation.
 - `frontend/src/features/usage-compliance/hooks/*`: stateful data/compliance orchestration and debounce.
+- `frontend/src/tests/*`: frontend unit tests for components, hooks, services, and utility functions.
 
 ## Setup
 
@@ -58,3 +60,40 @@ VITE_API_URL=http://localhost:4000/api
 ## Example policy seed
 
 See `backend/policies/example-course-policy.json`.
+
+## Testing and coverage
+
+### Run all tests (backend + frontend)
+
+From the workspace root:
+
+```bash
+npm run test -- --coverage
+```
+
+This command runs:
+
+- backend unit tests (`backend` workspace)
+- frontend unit tests (`frontend` workspace)
+- coverage output in both text and HTML format
+
+### Run tests for one workspace only
+
+Backend only:
+
+```bash
+npm run test --workspace backend -- --coverage
+```
+
+Frontend only:
+
+```bash
+npm run test --workspace frontend -- --coverage
+```
+
+### View HTML coverage reports
+
+After running tests with coverage, open these files in a browser:
+
+- Backend report: `backend/coverage/index.html`
+- Frontend report: `frontend/coverage/index.html`
