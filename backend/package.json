@@ -6,12 +6,46 @@
 	"main": "src/server.js",
 	"scripts": {
 		"dev": "node --watch src/server.js",
-		"start": "node src/server.js"
+		"start": "node src/server.js",
+		"test": "vitest run --coverage --coverage.reporter=text --coverage.reporter=html",
+		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
 		"mongoose": "^8.6.1"
+	},
+	"devDependencies": {
+		"@vitest/coverage-v8": "^2.1.8",
+		"vitest": "^2.1.8"
+	},
+	"vitest": {
+		"test": {
+			"environment": "node",
+			"include": [
+				"src/tests/**/*.test.js"
+			],
+			"coverage": {
+				"enabled": true,
+				"provider": "v8",
+				"reporter": [
+					"text",
+					"html"
+				],
+				"include": [
+					"src/services/**/*.js",
+					"src/controllers/**/*.js",
+					"src/repositories/**/*.js",
+					"src/utils/**/*.js",
+					"src/config/**/*.js"
+				],
+				"thresholds": {
+					"lines": 60,
+					"branches": 70,
+					"functions": 80
+				}
+			}
+		}
 	}
 }
